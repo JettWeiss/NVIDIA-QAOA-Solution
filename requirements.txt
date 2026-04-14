@@ -1,0 +1,5 @@
+networkx
+matplotlib
+ipywidgets
+qutip
+cuda-quantum
