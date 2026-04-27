@@ -1,4 +1,10 @@
 # Necessary packages
+
+import community as community_louvain
+#install 
+#pip install python-louvain
+
+
 import networkx as nx
 from networkx import algorithms
 from networkx.algorithms import community
@@ -289,40 +295,147 @@ def cutvalue(G):
     return cut
 
 
-#Updated
-def subgraphpartition(G,n, name, globalGraph):
-    """Divide the graph up into at most n subgraphs
-    
-    Parameters
-    ----------
-    G: networkX.Graph 
-        Graph that we want to subdivivde which lives inside of or is equatl to globalGraph
-    n : int
-        n is the maximum number of subgraphs in the partition
-    name : str
-        prefix for the graphs (in our case we'll use 'Global')
-    globalGraph: networkX.Graph
-        original problem graph
-        
-    Returns
-    -------
-    dict of str : networkX.Graph
-        Dictionary of networkX graphs with a string as the key
-    """
-    greedy_partition = community.greedy_modularity_communities(G, weight='weight', resolution=1.1, cutoff=1, best_n=n)
-    number_of_subgraphs = len(greedy_partition)
 
+
+
+
+#----------------------------------------------
+#                Louvain                      #
+#----------------------------------------------
+def subgraphpartition(G, n, name, globalGraph):
+#     # G is a graph to be partitioned
+
+#     """Divide the graph up into at most n subgraphs
+
+#     Parameters
+#     ----------
+#     G: networkX.Graph
+#         Graph that we want to subdivide which lives inside of or is equal to globalGraph
+#     n : int
+#         n is the maximum number of subgraphs after trimming/merge
+#     name : str
+#         prefix for the graphs (in our case we'll use 'Global')
+#     globalGraph: networkX.Graph
+#         original problem graph
+
+#-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+
+
+
+    # community_louvain finds the best partition of a graph G for you
+    partition = community_louvain.best_partition(G, weight='weight', resolution=1.1)
+    #community_louvain.best_partition() gives you a set of partitions in the form of 
+    # "Return Type: A dictionary mapping nodes to community integers (e.g., {node1: 0, node2: 1, node3: 0})."
+
+    # Next: Groups the nodes into communities.
+
+    # This is done by minimizing the modularity, meaning it wants to have the most connections
+        # inside of the community, and as few as possible between them. 
+
+    # Within the partitioned items, we want to set an id to each node
+        # becuase later we will need to trim down to size n, and then we will return the NetworkX format
+      
+    communities = {}
+    for node, comm_id in partition.items():
+        if comm_id not in communities:
+            communities[comm_id] = []
+        communities[comm_id].append(node)
+
+    # Code above takes each node and assings it a community. This allows to bundle nodes into a subgraph
+        #For example:
+        # node = 0, comm_id = 1
+        # then ->
+        # communities = {1: [0]}
+        # and so on 
+
+
+    #We want so make subgraphs so we can merge the smallest communities (subgraphs from above) together
+    community_list = list(communities.values())
+
+    #We're merging because of the n parameter, which is the maximum
+        # number of subgraphs allowed in a partition
+    while len(community_list) > n:
+            # Sort by size then merge the smallest until size n
+            community_list = sorted(community_list, key=len)
+
+            merged = community_list[0] + community_list[1]
+            community_list = [merged] + community_list[2:]
+
+
+    # Last is the return so the QAOA can use it.
+    # We have to rename the subgraphs from community
+    #c ommunity_list = [[0,1], [2,3], [4]] would become i=0, nodes=[0,1], i=1, nodes=[2,3], i=2, nodes=[4]
+    # then lastly to the form "{"Global:#": subgraph_#, etc}"
+        # so that NetworkX can use it 
+ 
     graph_dictionary = {}
-    graph_names=[]
-    for i in range(number_of_subgraphs):
-        subgraphname=name+':'+str(i)
-        graph_names.append(subgraphname)
+    for i, nodes in enumerate(community_list):
+        subgraphname = f"{name}:{i}"
+        graph_dictionary[subgraphname] = nx.subgraph(globalGraph, nodes)
 
-    for i in range(number_of_subgraphs):
-        nodelist = sorted(list(greedy_partition[i]))
-        graph_dictionary[graph_names[i]] = nx.subgraph(globalGraph, nodelist)
+    return graph_dictionary
+
+
+#----------------------------------------------
+#              End of Louvain                 #
+#----------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# #Updated
+# def subgraphpartition(G,n, name, globalGraph):
+#     """Divide the graph up into at most n subgraphs
+    
+#     Parameters
+#     ----------
+#     G: networkX.Graph 
+#         Graph that we want to subdivivde which lives inside of or is equatl to globalGraph
+#     n : int
+#         n is the maximum number of subgraphs in the partition
+#     name : str
+#         prefix for the graphs (in our case we'll use 'Global')
+#     globalGraph: networkX.Graph
+#         original problem graph
+        
+#     Returns
+#     -------
+#     dict of str : networkX.Graph
+#         Dictionary of networkX graphs with a string as the key
+#     """
+#     greedy_partition = community.greedy_modularity_communities(G, weight='weight', resolution=1.1, cutoff=1, best_n=n)
+#     number_of_subgraphs = len(greedy_partition)
+
+#     graph_dictionary = {}
+#     graph_names=[]
+#     for i in range(number_of_subgraphs):
+#         subgraphname=name+':'+str(i)
+#         graph_names.append(subgraphname)
+
+#     for i in range(number_of_subgraphs):
+#         nodelist = sorted(list(greedy_partition[i]))
+#         graph_dictionary[graph_names[i]] = nx.subgraph(globalGraph, nodelist)
      
-    return(graph_dictionary) 
+#     return(graph_dictionary) 
 
 
 

@@ -1,4 +1,10 @@
 # Necessary packages
+
+
+import community as community_louvain
+#install 
+#pip install python-louvain
+
 import networkx as nx
 from networkx import algorithms
 from networkx.algorithms import community
@@ -174,6 +180,7 @@ def find_optimal_parameters(G, layer_count, seed):
 # that contains a given vertex, and identify the vertices of the parent graph
 # that lie on the border of the subgraphs in the subgraph dictionary
 
+
 def subgraph_of_vertex(graph_dictionary, vertex):
     """
     A function that takes as input a subgraph partition (in the form of a graph dictionary) and a vertex.
@@ -246,6 +253,10 @@ def cutvalue(G):
         if G.nodes[u]['color'] != G.nodes[v]['color']:
             cut+=1
     return cut
+
+
+
+
 
 def subgraphpartition(G,n, name, globalGraph):
     # G is a graph to be partitioned
