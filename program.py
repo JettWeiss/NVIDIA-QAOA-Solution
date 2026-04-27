@@ -15,6 +15,15 @@ import matplotlib.pyplot as plt
 from typing import List
 
 
+# Newman Watts Strogatz network model
+n = 100 # number of numdes
+k = 4 # each node joined to k nearest neighbors
+p =0.8 # probability of adding a new edge
+seed = 1234
+sampleGraph3=nx.newman_watts_strogatz_graph(n, k, p, seed=seed)
+
+
+
 # Define a function to generate the Hamiltonian for a max cut problem using the graph G
 
 def hamiltonian_max_cut(sources : List[int], targets : List[int]):
@@ -700,12 +709,7 @@ def subgraph_solution(G, key, vertex_limit, subgraph_limit, layer_count, global_
 
 
 
-# Newman Watts Strogatz network model
-n = 100 # number of numdes
-k = 4 # each node joined to k nearest neighbors
-p =0.8 # probability of adding a new edge
-seed = 1234
-sampleGraph3=nx.newman_watts_strogatz_graph(n, k, p, seed=seed)
+
 
 num_subgraphs=11 # limits the size of the merger graphs
 num_qubits = 14 # max number of qubits allowed in a quantum circuit
