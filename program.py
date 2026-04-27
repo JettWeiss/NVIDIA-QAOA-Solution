@@ -16,3 +16,5 @@ def kernel():
 
 result = cudaq.sample(kernel)
 print(result)  # Example: { 11:500 00:500 }
+
+#test
