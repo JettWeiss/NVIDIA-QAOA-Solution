@@ -361,6 +361,10 @@ def subgraphpartition(G, n, name, globalGraph):
             merged = community_list[0] + community_list[1]
             community_list = [merged] + community_list[2:]
 
+    # What its doing: merged = A + B   ->   merged = AB   ->    community_list = [AB] + [C, D, E]   ->    community_list = [AB, C, D, E] 
+            
+
+
 
     # Last is the return so the QAOA can use it.
     # We have to rename the subgraphs from community
