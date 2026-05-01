@@ -34,7 +34,7 @@ from typing import List
 # taking d=6 and n =100, works well
 d = 6
 n =70
-graph_seed = 1234
+graph_seed = 1748
 sampleGraph3=nx.random_regular_graph(d,n,seed=graph_seed)
 #random graph from lab 2 
 #n = 30  # number of nodes
@@ -299,22 +299,36 @@ def cutvalue(G):
 
 
 #Show graph
-def show_graph(G, title="Graph"):
+def show_graph(G, title="Graph", partition=None):
+    """
+    Parameters
+    ----------
+    G : networkX.Graph
+    title : str
+    partition : dict, optional
+        Maps node -> community_id (from community_louvain.best_partition)
+        If provided, nodes are colored by community.
+    """
     print("----------------------------------------------------------")
     pos = nx.spring_layout(G, seed=42)
-    
     edge_labels = nx.get_edge_attributes(G, 'weight')
-    
+
+    if partition:
+        # Assign a unique color per community
+        num_communities = max(partition.values()) + 1
+        cmap = plt.cm.get_cmap('tab20', num_communities)
+        node_colors = [cmap(partition[node]) for node in G.nodes()]
+    else:
+        node_colors = 'steelblue'
+
     plt.figure(figsize=(12, 8))
-    nx.draw(G, pos=pos, 
-            with_labels=True, 
-            node_color='steelblue',
-            node_size=500, 
+    nx.draw(G, pos=pos,
+            with_labels=True,
+            node_color=node_colors,
+            node_size=500,
             font_color='white',
             font_size=8)
-    
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=6)
-    
     plt.title(title)
     plt.savefig(f"{title}.png", dpi=150, bbox_inches='tight')
     plt.close()
@@ -398,7 +412,13 @@ def subgraphpartition(G, n, name, globalGraph):
         subgraphname = f"{name}:{i}"
         graph_dictionary[subgraphname] = nx.subgraph(globalGraph, nodes)
     
-    
+    flat_partition = {}
+    for i, nodes in enumerate(community_list):
+        for node in nodes:
+            flat_partition[node] = i
+
+    if G is globalGraph:
+        show_graph(globalGraph, title=f"Louvain Partition2", partition=flat_partition)
 
     return graph_dictionary
 
@@ -430,7 +450,7 @@ def subgraphpartition(G, n, name, globalGraph):
 
 
 
-# #Updated
+#Greedy
 # def subgraphpartition(G,n, name, globalGraph):
 #     """Divide the graph up into at most n subgraphs
     
@@ -462,6 +482,14 @@ def subgraphpartition(G, n, name, globalGraph):
 #     for i in range(number_of_subgraphs):
 #         nodelist = sorted(list(greedy_partition[i]))
 #         graph_dictionary[graph_names[i]] = nx.subgraph(globalGraph, nodelist)
+
+#     flat_partition = {}
+#     for i, nodeset in enumerate(greedy_partition):
+#         for node in nodeset:
+#             flat_partition[node] = i
+
+#     if G is globalGraph:
+#         show_graph(globalGraph, title=f"Greedy Partition2", partition=flat_partition)
      
 #     return(graph_dictionary) 
 
